@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내가 개최할 행사 — 참석자 모으기</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#EAF6F0;
+    --surface:#FFFFFF;
+    --surface-2:#F3FBF7;
+    --ink:#26323D;
+    --ink-soft:#5B6B76;
+    --coral:#FF6B6B;
+    --coral-dark:#E24E4E;
+    --sun:#FFC93C;
+    --sky:#4EA8DE;
+    --plum:#6C4AB6;
+    --border:#D9EEE4;
+    --shadow:0 10px 26px rgba(38,50,61,0.09);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#151F1C;
+      --surface:#1E2A26;
+      --surface-2:#19231F;
+      --ink:#EAF3EF;
+      --ink-soft:#9FB3AB;
+      --border:#2C3D36;
+      --shadow:0 10px 26px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#151F1C;
+    --surface:#1E2A26;
+    --surface-2:#19231F;
+    --ink:#EAF3EF;
+    --ink-soft:#9FB3AB;
+    --border:#2C3D36;
+    --shadow:0 10px 26px rgba(0,0,0,0.4);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans KR',sans-serif;
+    min-height:100vh;
+    padding:20px 16px 60px;
+  }
+  .wrap{max-width:900px;margin:0 auto;}
+
+  /* ---------- Hero (Video Version) ---------- */
+  .hero {
+    position: relative;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    animation: hero-in .5s ease-out;
+    margin-bottom: 20px;
+  }
+  @media (prefers-reduced-motion: reduce){ .hero{animation:none;} }
+  @keyframes hero-in{ from{opacity:0; transform:translateY(-8px);} to{opacity:1; transform:translateY(0);} }
+  
+  .hero video {
+    width: 100%;
+    display: block;
+    height: auto;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:8px;margin:18px 0;flex-wrap:wrap;}
+  .tab-btn{
+    flex:1 1 auto;
+    min-width:120px;
+    border:none;
+    padding:12px 14px;
+    border-radius:14px;
+    background:var(--surface);
+    color:var(--ink-soft);
+    font-family:'Noto Sans KR',sans-serif;
+    font-weight:700;
+    font-size:15px;
+    cursor:pointer;
+    box-shadow:var(--shadow);
+    transition:transform .15s ease, background .15s ease, color .15s ease;
+  }
+  .tab-btn:hover{transform:translateY(-1px);}
+  .tab-btn.active{color:#fff;}
+  #tab-register.active{background:var(--coral);}
+  #tab-attend.active{background:var(--sky);}
+  #tab-rank.active{background:var(--plum);}
+
+  .panel{display:none;}
+  .panel.active{display:block; animation:panel-in .25s ease-out;}
+  @keyframes panel-in{ from{opacity:0;} to{opacity:1;} }
+
+  .card-box{
+    background:var(--surface);
+    border-radius:20px;
+    padding:20px;
+    box-shadow:var(--shadow);
+    margin-bottom:16px;
+  }
+
+  /* ---------- Progress ---------- */
+  .progress-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;}
+  .progress-row .label{font-weight:700;font-size:14.5px;color:var(--ink-soft);}
+  .progress-track{
+    flex:1 1 160px;
+    height:10px;
+    background:var(--surface-2);
+    border-radius:999px;
+    overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--coral),var(--sun));border-radius:999px;transition:width .3s ease;}
+  .target-input{
+    width:52px;border:1px solid var(--border);border-radius:8px;padding:4px 6px;
+    font-size:14px;text-align:center;background:var(--surface-2);color:var(--ink);
+  }
+
+  /* ---------- Form ---------- */
+  form.reg-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:6px;}
+  form.reg-form .full{grid-column:1 / -1;}
+  form.reg-form input, form.reg-form select{
+    width:100%;
+    padding:11px 12px;
+    border-radius:12px;
+    border:1.5px solid var(--border);
+    background:var(--surface-2);
+    color:var(--ink);
+    font-size:14.5px;
+    font-family:'Noto Sans KR',sans-serif;
+  }
+  form.reg-form input:focus, form.reg-form select:focus{outline:2px solid var(--sky);outline-offset:1px;}
+  .btn{
+    border:none;border-radius:12px;padding:11px 18px;font-weight:700;font-size:14.5px;
+    cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:transform .12s ease, opacity .12s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn-coral{background:var(--coral);color:#fff;}
+  .btn-sky{background:var(--sky);color:#fff;}
+  .btn-ghost{background:var(--surface-2);color:var(--ink-soft);border:1.5px solid var(--border);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+
+  /* ---------- Event grid ---------- */
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:16px;}
+  .ev-card {
+    position: relative;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 16px 14px 14px;
+    border-top: 6px solid var(--card-color, var(--coral));
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .ev-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(38,50,61,0.12);
+  }
+  .ev-num{
+    position:absolute;top:-10px;left:14px;
+    background:var(--card-color,var(--coral));color:#fff;
+    font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;
+  }
+  .ev-host{font-size:12.5px;color:var(--ink-soft);margin:6px 0 2px;font-weight:700;}
+  .ev-title{font-family:'Do Hyeon',sans-serif;font-size:19px;margin:0 0 8px;line-height:1.3;}
+  .ev-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+  .ev-meta span {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+  }
+  .ev-count{
+    display:inline-block;background:var(--surface);border:1px solid var(--border);
+    border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700;color:var(--plum);margin-bottom:10px;
+  }
+  .join-btn{width:100%;}
+  .empty {
+    text-align: center;
+    color: var(--ink-soft);
+    padding: 40px 20px;
+    font-size: 15px;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.5);
+    border: 2px dashed #B8D8C7;
+    border-radius: 20px;
+  }
+  .participants-list {
+    margin: 10px 0;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+
+  /* ---------- Attend tab ---------- */
+  .who-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .who-row .who{font-size:15px;font-weight:700;}
+  .who-row .who span{color:var(--sky);}
+  .link-btn{background:none;border:none;color:var(--ink-soft);text-decoration:underline;cursor:pointer;font-size:13px;padding:0;font-family:'Noto Sans KR',sans-serif;}
+
+  .schedule-chip{
+    display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);
+    border-radius:999px;padding:5px 12px;font-size:12.5px;margin:0 6px 6px 0;color:var(--ink-soft);
+  }
+  .schedule-chip b{color:var(--ink);}
+
+  .join-note{font-size:12px;margin-top:8px;color:var(--coral-dark);min-height:14px;}
+  .joined-tag{color:#2E9E6B;font-weight:700;font-size:13px;}
+  .own-tag{color:var(--ink-soft);font-size:12.5px;font-style:normal;}
+
+  /* ---------- Rank ---------- */
+  .rank-row{
+    display:flex;align-items:center;gap:12px;background:var(--surface-2);
+    border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-bottom:10px;
+  }
+  .rank-medal{font-size:22px;width:30px;text-align:center;flex-shrink:0;}
+  .rank-info{flex:1;min-width:0;}
+  .rank-title{font-weight:700;font-size:14.5px;}
+  .rank-sub{font-size:12.5px;color:var(--ink-soft);}
+  .rank-bar-track{height:8px;background:var(--surface);border-radius:999px;margin-top:6px;overflow:hidden;border:1px solid var(--border);}
+  .rank-bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--plum));}
+  .rank-count{font-family:'Do Hyeon',sans-serif;font-size:22px;color:var(--plum);width:44px;text-align:right;flex-shrink:0;}
+
+  footer{text-align:center;margin-top:26px;}
+  footer .btn-ghost{font-size:13px;padding:9px 16px;}
+
+  /* ---------- Modal ---------- */
+  .modal-overlay{
+    position:fixed;inset:0;background:rgba(20,25,23,.5);
+    display:none;align-items:center;justify-content:center;z-index:50;padding:16px;
+  }
+  .modal-box{
+    background:var(--surface);border-radius:18px;padding:22px;
+    max-width:340px;width:100%;box-shadow:var(--shadow);
+  }
+  .modal-box h3{margin:0 0 8px;font-family:'Do Hyeon',sans-serif;font-weight:400;font-size:19px;color:var(--ink);}
+  .modal-box p{margin:0 0 14px;font-size:14px;color:var(--ink-soft);line-height:1.5;}
+  .modal-box input[type=password]{
+    width:100%;padding:10px 12px;border-radius:10px;border:1.5px solid var(--border);
+    background:var(--surface-2);color:var(--ink);font-size:14.5px;margin-bottom:6px;
+  }
+  .modal-error{color:var(--coral-dark);font-size:12.5px;min-height:16px;margin-bottom:2px;}
+  .modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:10px;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="hero">
+    <video autoplay loop muted playsinline aria-label="내가 개최할 행사 🎪 참석자 모으기. 행사 참석 인원은 무제한! 대신 각 교시마다 정해진 인원만 참석할 수 있어요.">
+      <source src="intro.mp4" type="video/mp4">
+    </video>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-register" onclick="showTab('register')">📋 행사 등록</button>
+    <button class="tab-btn" id="tab-attend" onclick="showTab('attend')">🚶 참석 신청</button>
+    <button class="tab-btn" id="tab-rank" onclick="showTab('rank')">🏆 순위 보기</button>
+  </div>
+
+  <!-- ============ 등록 ============ -->
+  <div class="panel active" id="panel-register">
+    <div class="card-box">
+      <div class="progress-row">
+        <span class="label">등록된 행사</span>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+        <span id="progress-text" class="label">0 / 25</span>
+        <span class="label" style="color:var(--ink-soft);font-weight:400;">목표</span>
+        <input type="number" min="1" max="60" class="target-input" id="target-input" value="25">
+      </div>
+
+      <form class="reg-form" id="reg-form">
+        <input type="text" id="f-host" placeholder="개최자 이름" required>
+        <select id="f-title" required>
+          <option value="" disabled selected>행사명 선택 (Event)</option>
+        </select>
+        <select id="f-location" required>
+          <option value="" disabled selected>장소 선택 (Location)</option>
+        </select>
+        <select id="f-time" required>
+          <option value="" disabled selected>시간 선택</option>
+          <option>1교시</option><option>2교시</option><option>3교시</option>
+          <option>4교시</option><option>5교시</option><option>6교시</option>
+        </select>
+        <button type="submit" class="btn btn-coral full">행사 등록하기</button>
+      </form>
+    </div>
+
+    <div id="register-list"></div>
+  </div>
+
+  <!-- ============ 참석 ============ -->
+  <div class="panel" id="panel-attend">
+    <div class="card-box" id="attend-gate-box">
+      <!-- filled by JS -->
+    </div>
+    <div id="attend-list"></div>
+  </div>
+
+  <!-- ============ 순위 ============ -->
+  <div class="panel" id="panel-rank">
+    <div class="card-box">
+      <div id="rank-list"></div>
+    </div>
+  </div>
+
+  <footer>
+    <button class="btn btn-ghost" onclick="openResetModal()">🔒 전체 초기화 (선생님 전용)</button>
+  </footer>
+
+</div>
+
+<!-- 알림 모달 -->
+<div class="modal-overlay" id="alert-modal">
+  <div class="modal-box">
+    <h3 id="alert-modal-title">알림</h3>
+    <p id="alert-modal-msg"></p>
+    <div class="modal-actions">
+      <button class="btn btn-coral" onclick="closeAlertModal()">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 확인 모달 (등록 확정용) -->
+<div class="modal-overlay" id="confirm-modal">
+  <div class="modal-box">
+    <h3 id="confirm-modal-title">확인</h3>
+    <p id="confirm-modal-msg"></p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeConfirmModal()">취소</button>
+      <button class="btn btn-coral" id="confirm-modal-ok">확인</button>
+    </div>
+  </div>
+</div>
+
+<!-- 초기화 비밀번호 모달 (선생님 전용) -->
+<div class="modal-overlay" id="reset-modal">
+  <div class="modal-box">
+    <h3>🔒 선생님 확인</h3>
+    <p>모든 행사와 참석 기록을 삭제하고 새로 시작해요. 이 작업은 되돌릴 수 없어요. 비밀번호를 입력하세요.</p>
+    <input type="password" id="reset-password" placeholder="비밀번호" onkeydown="if(event.key==='Enter'){confirmReset();}">
+    <div class="modal-error" id="reset-error"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeResetModal()">취소</button>
+      <button class="btn btn-coral" onclick="confirmReset()">초기화</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const STORAGE_KEY = 'event-fair-state-v1';
+  const CARD_COLORS = ['#FF6B6B','#FFC93C','#4EA8DE','#6C4AB6','#2E9E6B','#FF9F45','#E15FA0','#3FB0A5'];
+
+  const EVENT_TITLES = [
+    'Board Game Tournament (보드게임 대회)','Ddakji Championship (딱지치기 왕중왕전)','Mini Bowling Game (미니 볼링 게임)',
+    'Paper Airplane Contest (종이비행기 멀리 날리기)','Cup Stacking Challenge (컵쌓기 챌린지)','Jegichagi Master (제기차기 왕)',
+    'String Figures Class (실뜨기 배우기)','Caricature Drawing (캐리커처 그려주기)','Clay Craft Workshop (클레이 공예 체험)',
+    'Face Painting (페이스페인팅)','Bracelet Making (팔찌 만들기)','Origami Class (종이접기 교실)',
+    'Mini Magic Show (미니 마술쇼)','Speed Quiz Contest (스피드 퀴즈 대회)','Golden Bell Challenge (골든벨 도전)',
+    'Hidden Picture Hunt (숨은그림찾기)','Mini Escape Room (방탈출 미니게임)','Treasure Hunt (보물찾기)',
+    'Samulnori Experience (사물놀이 체험)','Karaoke Contest (노래방 대회)','Dance Battle (댄스 배틀)',
+    'Jenga Challenge (젠가 챌린지)','Dart Throwing (다트 던지기)','Hula Hoop Contest (훌라후프 대회)',
+    'Jump Rope Relay (줄넘기 이어달리기)','Word Puzzle Quiz (초성 퀴즈)','Picture Book Reading (그림책 낭독회)',
+    'Science Experiment Show (과학 실험 쇼)','Mini Sports Day (미니 운동회)','Plant Sharing Garden (텃밭 식물 나눔)'
+  ];
+  const LOCATIONS = [
+    'Grade 1 Classroom 1 (1학년 1반 교실)','Grade 1 Classroom 2 (1학년 2반 교실)','Grade 2 Classroom 1 (2학년 1반 교실)',
+    'Grade 2 Classroom 2 (2학년 2반 교실)','Grade 3 Classroom 1 (3학년 1반 교실)','Grade 3 Classroom 2 (3학년 2반 교실)',
+    'Grade 4 Classroom 1 (4학년 1반 교실)','Grade 4 Classroom 2 (4학년 2반 교실)','Grade 5 Classroom 1 (5학년 1반 교실)',
+    'Grade 5 Classroom 2 (5학년 2반 교실)','Grade 6 Classroom 1 (6학년 1반 교실)','Grade 6 Classroom 2 (6학년 2반 교실)',
+    'Library (도서관)','Music Room (음악실)','Art Room (미술실)',
+    'Science Room (과학실)','Computer Room (컴퓨터실)','Gymnasium (체육관)',
+    'Auditorium (강당)','Multipurpose Room (다목적실)','Cafeteria (급식실)',
+    'Playground (운동장)','AV Room (시청각실)','Broadcasting Room (방송실)',
+    "Hallway by the Nurse's Office (보건실 앞 복도)",'Main Entrance (중앙 현관)','Student Council Room (학생회실)',
+    'Counseling Room (상담실)','Rooftop Garden (옥상정원)','Playground Park (놀이터)'
+  ];
+
+  let state = { target: 25, events: [], currentParticipant: '' };
+
+  function loadState(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){ const parsed = JSON.parse(raw); state = Object.assign({target:25,events:[],currentParticipant:''}, parsed); }
+    }catch(e){ /* start fresh if storage unavailable or corrupted */ }
+  }
+  function populateSelects(){
+    const usedTitles = new Set(state.events.map(e=>e.title));
+    const usedLocs = new Set(state.events.map(e=>e.location));
+    const titleSel = document.getElementById('f-title');
+    const locSel = document.getElementById('f-location');
+    const titleLeft = EVENT_TITLES.filter(t=>!usedTitles.has(t));
+    const locLeft = LOCATIONS.filter(l=>!usedLocs.has(l));
+    titleSel.innerHTML = '<option value="" disabled selected>' + (titleLeft.length ? '행사명 선택 (Event)' : '선택 가능한 행사명이 없어요') + '</option>';
+    titleLeft.forEach(t=>{ const o=document.createElement('option'); o.textContent=t; titleSel.appendChild(o); });
+    locSel.innerHTML = '<option value="" disabled selected>' + (locLeft.length ? '장소 선택 (Location)' : '선택 가능한 장소가 없어요') + '</option>';
+    locLeft.forEach(l=>{ const o=document.createElement('option'); o.textContent=l; locSel.appendChild(o); });
+  }
+  function saveState(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ /* ignore */ }
+  }
+
+  function norm(s){ return (s||'').trim().toLowerCase(); }
+  function uid(){ return 'e' + Date.now().toString(36) + Math.random().toString(36).slice(2,7); }
+  function colorFor(name){
+    let h = 0;
+    for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % CARD_COLORS.length;
+    return CARD_COLORS[Math.abs(h)];
+  }
+  function esc(s){
+    return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  function showTab(name){
+    ['register','attend','rank'].forEach(n=>{
+      document.getElementById('panel-'+n).classList.toggle('active', n===name);
+      document.getElementById('tab-'+n).classList.toggle('active', n===name);
+    });
+  }
+
+  /* ---------------- 모달 ---------------- */
+  function openAlertModal(title, msg){
+    document.getElementById('alert-modal-title').textContent = title;
+    document.getElementById('alert-modal-msg').textContent = msg;
+    document.getElementById('alert-modal').style.display = 'flex';
+  }
+  function closeAlertModal(){ document.getElementById('alert-modal').style.display = 'none'; }
+
+  function openConfirmModal(title, msg, onOk){
+    document.getElementById('confirm-modal-title').textContent = title;
+    document.getElementById('confirm-modal-msg').textContent = msg;
+    const okBtn = document.getElementById('confirm-modal-ok');
+    okBtn.onclick = function(){ closeConfirmModal(); onOk(); };
+    document.getElementById('confirm-modal').style.display = 'flex';
+  }
+  function closeConfirmModal(){ document.getElementById('confirm-modal').style.display = 'none'; }
+
+  function openResetModal(){
+    document.getElementById('reset-password').value = '';
+    document.getElementById('reset-error').textContent = '';
+    document.getElementById('reset-modal').style.display = 'flex';
+  }
+  function closeResetModal(){ document.getElementById('reset-modal').style.display = 'none'; }
+  function confirmReset(){
+    const pw = document.getElementById('reset-password').value;
+    if(pw !== '2026'){
+      document.getElementById('reset-error').textContent = '비밀번호가 올바르지 않아요.';
+      return;
+    }
+    state = { target: state.target || 25, events: [], currentParticipant: '' };
+    saveState();
+    populateSelects();
+    renderAll();
+    closeResetModal();
+    showTab('register');
+  }
+
+  /* ---------------- 등록 탭 ---------------- */
+  function renderRegister(){
+    const target = state.target || 25;
+    const myName = state.currentParticipant;
+    document.getElementById('target-input').value = target;
+    const pct = Math.min(100, Math.round((state.events.length/target)*100));
+    document.getElementById('progress-fill').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = state.events.length + ' / ' + target;
+
+    const list = document.getElementById('register-list');
+    if(state.events.length === 0){
+      list.innerHTML = '<div class="empty">아직 등록된 행사가 없어요. 첫 번째 행사를 등록해보세요! 🎈</div>';
+      return;
+    }
+    list.innerHTML = '<div class="grid">' + state.events.map((ev,i)=>{
+      const c = colorFor(ev.host);
+      let hostInfo = '';
+      if(myName && norm(ev.host) === norm(myName) && ev.participants.length > 0) {
+        hostInfo = `<div class="participants-list">
+          <b>🙋 참석자 (${ev.participants.length}명):</b> ${esc(ev.participants.join(', '))}
+        </div>`;
+      }
+      return `<div class="ev-card" style="--card-color:${c}">
+        <span class="ev-num">#${i+1}</span>
+        <div class="ev-host">${esc(ev.host)} 님의 행사</div>
+        <div class="ev-title">${esc(ev.title)}</div>
+        <div class="ev-meta">
+          <span>📍 ${esc(ev.location)}</span>
+          <span>🕒 ${esc(ev.time)}</span>
+        </div>
+        <span class="ev-count">참석 ${ev.participants.length}명</span>
+        ${hostInfo}
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  document.getElementById('reg-form').addEventListener('submit', function(e){
+    e.preventDefault();
+    const host = document.getElementById('f-host').value.trim();
+    const title = document.getElementById('f-title').value;
+    const location = document.getElementById('f-location').value;
+    const time = document.getElementById('f-time').value;
+    if(!host || !title || !location || !time) return;
+    if(state.events.some(ev=>norm(ev.host)===norm(host))){
+      openAlertModal('등록 불가', '이미 행사를 등록했어요! 한 사람당 행사는 하나만 만들 수 있어요.');
+      return;
+    }
+    openConfirmModal('등록 확인', '한 번 등록하면 수정하거나 삭제할 수 없어요. 이대로 등록할까요?', function(){
+      state.events.push({ id: uid(), host, title, location, time, participants: [] });
+      state.currentParticipant = host;
+      saveState();
+      document.getElementById('reg-form').reset();
+      populateSelects();
+      renderAll();
+      showTab('attend');
+      openAlertModal('등록 완료! 🎉', `${host} 님의 행사가 등록됐어요. 이제 ${host} 님의 이름으로 친구들 행사에 참석 신청을 할 수 있어요.`);
+    });
+  });
+
+  document.getElementById('target-input').addEventListener('change', function(){
+    const v = parseInt(this.value, 10);
+    state.target = (v && v > 0) ? v : 25;
+    saveState();
+    renderRegister();
+  });
+
+  /* ---------------- 참석 탭 ---------------- */
+  function renderAttend(){
+    const gate = document.getElementById('attend-gate-box');
+    const name = state.currentParticipant;
+
+    if(!name){
+      gate.innerHTML = `
+        <div class="who-row"><span class="who">아직 참석 신청을 시작할 수 없어요</span></div>
+        <div style="font-size:13.5px;color:var(--ink-soft);line-height:1.6;">
+          "행사 등록" 탭에서 자신의 행사를 등록하면, 등록한 이름으로 자동으로 참석 신청을 시작할 수 있어요.
+        </div>`;
+      document.getElementById('attend-list').innerHTML = '';
+      return;
+    }
+
+    const mySlots = state.events.filter(e=>e.participants.some(p=>norm(p)===norm(name)));
+    const scheduleHtml = mySlots.length
+      ? mySlots.map(e=>`<span class="schedule-chip">🕒 <b>${esc(e.time)}</b> · ${esc(e.title)}</span>`).join('')
+      : '<span style="color:var(--ink-soft);font-size:13px;">아직 신청한 행사가 없어요.</span>';
+
+    gate.innerHTML = `
+      <div class="who-row">
+        <span class="who">👋 <span>${esc(name)}</span> 님, 참석하고 싶은 행사를 골라보세요</span>
+      </div>
+      <div>${scheduleHtml}</div>`;
+
+    const list = document.getElementById('attend-list');
+    if(state.events.length === 0){
+      list.innerHTML = '<div class="empty">아직 등록된 행사가 없어요. 먼저 친구들이 행사를 등록해야 해요!</div>';
+      return;
+    }
+
+    list.innerHTML = '<div class="grid">' + state.events.map((ev,i)=>{
+      const c = colorFor(ev.host);
+      const isHost = norm(ev.host) === norm(name);
+      const already = ev.participants.some(p=>norm(p)===norm(name));
+      const hostSameTime = !isHost && !already && state.events.some(e => norm(e.host)===norm(name) && e.time===ev.time);
+      const conflict = !isHost && !already && !hostSameTime && state.events.some(e => e.time===ev.time && e.id!==ev.id && e.participants.some(p=>norm(p)===norm(name)));
+
+      let actionHtml;
+      if(isHost){
+        actionHtml = `<div class="own-tag">🎤 내가 개최한 행사예요</div>`;
+      } else if(already){
+        actionHtml = `<div class="joined-tag">✓ 참석 신청 완료</div>
+          <button class="link-btn" onclick="cancelJoin('${ev.id}')">신청 취소</button>`;
+      } else if(hostSameTime){
+        actionHtml = `<div class="own-tag">🎤 내 행사와 같은 시간대예요</div>`;
+      } else if(conflict){
+        actionHtml = `<button class="btn btn-ghost join-btn" disabled>같은 시간 다른 행사 참석 중</button>`;
+      } else {
+        actionHtml = `<button class="btn btn-sky join-btn" onclick="joinEvent('${ev.id}')">참석 신청하기</button>`;
+      }
+
+      let hostInfo = '';
+      if (isHost && ev.participants.length > 0) {
+        hostInfo = `<div class="participants-list">
+          <b>🙋 참석자 (${ev.participants.length}명):</b> ${esc(ev.participants.join(', '))}
+        </div>`;
+      }
+
+      return `<div class="ev-card" style="--card-color:${c}">
+        <span class="ev-num">#${i+1}</span>
+        <div class="ev-host">${esc(ev.host)} 님의 행사</div>
+        <div class="ev-title">${esc(ev.title)}</div>
+        <div class="ev-meta">
+          <span>📍 ${esc(ev.location)}</span>
+          <span>🕒 ${esc(ev.time)}</span>
+        </div>
+        <span class="ev-count">참석 ${ev.participants.length}명</span>
+        ${hostInfo}
+        <div>${actionHtml}</div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+
+  function joinEvent(id){
+    const name = state.currentParticipant;
+    if(!name) return;
+    const ev = state.events.find(e=>e.id===id);
+    if(!ev) return;
+    if(norm(ev.host)===norm(name)) return;
+    if(ev.participants.some(p=>norm(p)===norm(name))) return;
+    if(state.events.some(e => norm(e.host)===norm(name) && e.time===ev.time)){
+      openAlertModal('참석 불가', '내가 개최한 행사와 같은 시간대라 참석할 수 없어요.');
+      return;
+    }
+    const conflict = state.events.find(e => e.time===ev.time && e.id!==ev.id && e.participants.some(p=>norm(p)===norm(name)));
+    if(conflict){
+      openAlertModal('참석 불가', `이미 같은 시간(${ev.time})에 '${conflict.title}'에 참석 신청을 했어요.`);
+      return;
+    }
+    ev.participants.push(name);
+    saveState();
+    renderAll();
+  }
+  function cancelJoin(id){
+    const name = state.currentParticipant;
+    const ev = state.events.find(e=>e.id===id);
+    if(!ev) return;
+    ev.participants = ev.participants.filter(p=>norm(p)!==norm(name));
+    saveState();
+    renderAll();
+  }
+
+  /* ---------------- 순위 탭 ---------------- */
+  function renderRank(){
+    const list = document.getElementById('rank-list');
+    if(state.events.length === 0){
+      list.innerHTML = '<div class="empty">등록된 행사가 없어서 순위를 보여줄 수 없어요.</div>';
+      return;
+    }
+    const sorted = [...state.events].sort((a,b)=>b.participants.length - a.participants.length);
+    const max = Math.max(1, sorted[0].participants.length);
+    const medals = ['🥇','🥈','🥉'];
+    list.innerHTML = sorted.map((ev,i)=>{
+      const pct = Math.round((ev.participants.length/max)*100);
+      return `<div class="rank-row">
+        <div class="rank-medal">${medals[i] || (i+1)}</div>
+        <div class="rank-info">
+          <div class="rank-title">${esc(ev.title)} <span style="font-weight:400;color:var(--ink-soft);">— ${esc(ev.host)}</span></div>
+          <div class="rank-sub">📍 ${esc(ev.location)} · 🕒 ${esc(ev.time)}</div>
+          <div class="rank-bar-track"><div class="rank-bar-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="rank-count">${ev.participants.length}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function renderAll(){
+    renderRegister();
+    renderAttend();
+    renderRank();
+  }
+
+  loadState();
+  populateSelects();
+  renderAll();
+</script>
+</body>
+</html>
